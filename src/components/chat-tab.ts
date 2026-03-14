@@ -6,11 +6,12 @@ import type {
   ChatSettings,
   ContextLevel,
   HistoryScope,
+  ReplyToRef,
   StoredPrompt,
   TokenUsage,
 } from '../models/chat.js';
 import { DEFAULT_MODELS, DEFAULT_SETTINGS } from '../models/chat.js';
-import { Settings, ClipboardList, Send, FileText, Ruler, Ban, Briefcase, Zap } from 'lucide';
+import { Settings, ClipboardList, Send, FileText, Ruler, Ban, Files, Zap, Reply, X } from 'lucide';
 import { renderIcon, iconStyles } from './icons.js';
 import './arbor-model-picker.js';
 import './context-window-status.js';
@@ -51,6 +52,7 @@ export class ChatTab extends LitElement {
       display: flex;
       flex-direction: column;
       gap: var(--ai-spacing-sm);
+      position: relative;
     }
 
     /* Timeline bar (inspired by Gemini Voyager) */
@@ -65,56 +67,59 @@ export class ChatTab extends LitElement {
       align-items: center;
       padding: var(--ai-spacing-sm) 0;
       z-index: 1;
+      background: var(--ai-color-bg-raised);
+      border-left: 1px solid var(--ai-color-border-default);
+      overflow: hidden;
     }
 
     .timeline-track {
       flex: 1;
       width: 100%;
-      overflow-y: auto;
-      overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
-
-    .timeline-track::-webkit-scrollbar {
-      width: 2px;
-    }
-
-    .timeline-track::-webkit-scrollbar-thumb {
-      background: var(--ai-color-border-default);
-      border-radius: var(--ai-radius-full);
+      position: relative;
+      min-height: 0;
     }
 
     .timeline-dot {
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%, -50%);
       width: 8px;
       height: 8px;
-      border-radius: 50%;
+      padding: 0;
       border: none;
-      background: var(--ai-color-border-default);
+      border-radius: 50%;
+      background: transparent;
       cursor: pointer;
-      flex-shrink: 0;
-      transition: background var(--ai-duration-fast), transform var(--ai-duration-fast);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ai-color-border-default);
+      transition: color var(--ai-duration-fast), transform var(--ai-duration-fast);
     }
 
     .timeline-dot:hover {
-      background: var(--ai-color-accent-default);
-      transform: scale(1.2);
+      color: var(--ai-color-accent-default);
+      transform: translate(-50%, -50%) scale(1.2);
     }
 
     .timeline-dot.active {
-      background: var(--ai-color-accent-default);
+      color: var(--ai-color-accent-default);
       box-shadow: 0 0 0 2px var(--ai-color-accent-glow);
     }
 
     .timeline-dot.starred {
-      background: var(--ai-color-gold);
+      color: var(--ai-color-gold);
     }
 
     .timeline-dot.starred.active {
-      background: var(--ai-color-gold);
+      color: var(--ai-color-gold);
       box-shadow: 0 0 0 2px var(--ai-color-gold-bg);
+    }
+
+    .timeline-dot svg {
+      display: block;
+      width: 8px;
+      height: 8px;
     }
 
     .message-thread::-webkit-scrollbar {
@@ -209,6 +214,108 @@ export class ChatTab extends LitElement {
 
     .message.user .message-meta {
       justify-content: flex-end;
+    }
+
+    /* Quote reply button (inspired by Gemini Voyager) */
+    .message-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      opacity: 0.6;
+      transition: opacity var(--ai-duration-fast);
+    }
+
+    .message:hover .message-actions {
+      opacity: 1;
+    }
+
+    .quote-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      background: transparent;
+      border: none;
+      border-radius: var(--ai-radius-sm);
+      color: var(--ai-color-text-muted);
+      cursor: pointer;
+      transition: color var(--ai-duration-fast), background var(--ai-duration-fast);
+    }
+
+    .quote-btn:hover {
+      color: var(--ai-color-accent-default);
+      background: var(--ai-color-bg-overlay);
+    }
+
+    .quote-btn .ai-icon {
+      color: inherit;
+    }
+
+    /* Timeline jump highlight */
+    .message.timeline-jump-highlight {
+      animation: timeline-highlight-pulse 1.5s ease-out;
+    }
+
+    @keyframes timeline-highlight-pulse {
+      0%, 100% { background: transparent; box-shadow: none; }
+      20% { background: var(--ai-color-accent-glow); box-shadow: 0 0 0 2px var(--ai-color-accent-default); }
+      80% { background: var(--ai-color-accent-glow); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .message.timeline-jump-highlight {
+        animation-duration: 0.3s;
+      }
+    }
+
+    /* Quoted block above input */
+    .quoted-block {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--ai-spacing-sm);
+      padding: var(--ai-spacing-sm) var(--ai-spacing-md);
+      margin-bottom: var(--ai-spacing-xs);
+      background: var(--ai-color-bg-overlay);
+      border: 1px solid var(--ai-color-border-default);
+      border-radius: var(--ai-radius-md);
+      border-left: 3px solid var(--ai-color-accent-default);
+    }
+
+    .quoted-block-content {
+      flex: 1;
+      min-width: 0;
+      font-size: var(--ai-font-size-sm);
+      color: var(--ai-color-text-secondary);
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .quoted-block-dismiss {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      background: transparent;
+      border: none;
+      border-radius: var(--ai-radius-sm);
+      color: var(--ai-color-text-muted);
+      cursor: pointer;
+      transition: color var(--ai-duration-fast), background var(--ai-duration-fast);
+    }
+
+    .quoted-block-dismiss:hover {
+      color: var(--ai-color-text-primary);
+      background: var(--ai-color-bg-raised);
+    }
+
+    .reply-indicator {
+      color: var(--ai-color-text-muted);
+      font-style: italic;
     }
 
     .context-badge {
@@ -568,6 +675,11 @@ export class ChatTab extends LitElement {
   @state() private _streamingContent = '';
   @state() private _activeMessageId: string | null = null;
   @state() private _starredIds = new Set<string>();
+  @state() private _timelinePositions = new Map<string, number>();
+  @state() private _highlightedMessageId: string | null = null;
+  @state() private _replyTo: ReplyToRef | null = null;
+
+  private static readonly TIMELINE_DOT_MIN_GAP_PCT = 2;
 
   private _scrollCleanup?: () => void;
 
@@ -590,6 +702,11 @@ export class ChatTab extends LitElement {
   override updated(changed: Map<string, unknown>) {
     super.updated(changed);
     if (changed.has('documentId')) this._loadStarred();
+    // Sync when host provides chatHistory after connect (e.g. demo page)
+    if (changed.has('chatHistory') && this.chatHistory.length && this._messages.length === 0) {
+      this._messages = [...this.chatHistory];
+      this._hasSentOnce = true;
+    }
     if (changed.has('_messages')) {
       this._setupScrollObserver();
     }
@@ -625,6 +742,36 @@ export class ChatTab extends LitElement {
     super.disconnectedCallback();
     document.removeEventListener('keydown', this._onGlobalKeydown.bind(this));
     this._scrollCleanup?.();
+    if (this._highlightTimeout) clearTimeout(this._highlightTimeout);
+  }
+
+  private _computeTimelinePositions() {
+    const thread = this.renderRoot.querySelector('.message-thread') as HTMLElement;
+    const markers = this._timelineMarkers;
+    if (!thread || markers.length === 0) {
+      this._timelinePositions = new Map();
+      return;
+    }
+    const scrollHeight = thread.scrollHeight;
+    if (scrollHeight <= 0) return;
+    const MIN_GAP_PCT = ChatTab.TIMELINE_DOT_MIN_GAP_PCT;
+    const entries: { id: string; pct: number }[] = [];
+    for (const m of markers) {
+      const el = this.renderRoot.querySelector(`.message.user[data-message-id="${m.id}"]`) as HTMLElement;
+      if (!el) continue;
+      const pct = Math.min(100, Math.max(0, (el.offsetTop / scrollHeight) * 100));
+      entries.push({ id: m.id, pct });
+    }
+    entries.sort((a, b) => a.pct - b.pct);
+    const next = new Map<string, number>();
+    let prevPct = -MIN_GAP_PCT - 1;
+    for (const { id, pct } of entries) {
+      const gap = pct - prevPct;
+      const adjustedPct = gap < MIN_GAP_PCT ? prevPct + MIN_GAP_PCT : pct;
+      next.set(id, Math.min(100, Math.max(0, adjustedPct)));
+      prevPct = adjustedPct;
+    }
+    this._timelinePositions = next;
   }
 
   private _setupScrollObserver() {
@@ -632,6 +779,7 @@ export class ChatTab extends LitElement {
     const markers = this._timelineMarkers;
     if (markers.length === 0) {
       this._activeMessageId = null;
+      this._timelinePositions = new Map();
       return;
     }
     const thread = this.renderRoot.querySelector('.message-thread') as HTMLElement;
@@ -650,10 +798,22 @@ export class ChatTab extends LitElement {
       }
       if (best) this._activeMessageId = best.id;
     };
+    const scheduleLayout = () => {
+      requestAnimationFrame(() => {
+        this._computeTimelinePositions();
+        updateActive();
+      });
+    };
+    scheduleLayout();
     updateActive();
     const boundUpdate = () => requestAnimationFrame(updateActive);
     thread.addEventListener('scroll', boundUpdate, { passive: true });
-    this._scrollCleanup = () => thread.removeEventListener('scroll', boundUpdate);
+    const ro = new ResizeObserver(scheduleLayout);
+    ro.observe(thread);
+    this._scrollCleanup = () => {
+      thread.removeEventListener('scroll', boundUpdate);
+      ro.disconnect();
+    };
   }
 
   private _onGlobalKeydown(e: KeyboardEvent) {
@@ -767,10 +927,12 @@ export class ChatTab extends LitElement {
       pageRange: this.contextLevel === 'visible' && this.visiblePageRange ? this.visiblePageRange : undefined,
       documentId: this.documentId,
       documentName: this.documentName,
+      replyTo: this._replyTo ?? undefined,
     };
 
     this._messages = [...this._messages, msg];
     if (!contentOverride) this._inputValue = '';
+    this._replyTo = null;
 
     this.dispatchEvent(new CustomEvent('chat-message-sent', {
       detail: {
@@ -779,6 +941,7 @@ export class ChatTab extends LitElement {
         modelId: this.selectedModelId,
         contextLevel: this.contextLevel,
         visiblePageRange: this.visiblePageRange,
+        replyTo: msg.replyTo,
       },
       bubbles: true,
       composed: true,
@@ -815,7 +978,7 @@ export class ChatTab extends LitElement {
   private _contextBadgeIcon(msg: ChatMessage) {
     if (!msg.contextLevel || msg.contextLevel === 'none') return renderIcon(Ban, 12, 'muted');
     if (msg.contextLevel === 'visible' && msg.pageRange) return renderIcon(Ruler, 12, 'teal');
-    if (msg.contextLevel === 'all-documents') return renderIcon(Briefcase, 12, 'gold');
+    if (msg.contextLevel === 'all-documents') return renderIcon(Files, 12, 'gold');
     return renderIcon(FileText, 12, 'gold');
   }
 
@@ -836,15 +999,27 @@ export class ChatTab extends LitElement {
     return this._messages.filter(m => m.role === 'user' && !m.isModelSwitchSeparator);
   }
 
-  private _scrollToMessage(msgId: string) {
+  private _scrollToMessage(msgId: string, pct?: number) {
     const el = this.renderRoot.querySelector(`[data-message-id="${msgId}"]`) as HTMLElement;
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    const thread = this.renderRoot.querySelector('.message-thread') as HTMLElement;
+    if (!el || !thread) return;
+    const resolvedPct = pct ?? this._timelinePositions.get(msgId) ?? 50;
+    const scrollTop = el.offsetTop - (resolvedPct / 100) * thread.clientHeight;
+    const clamped = Math.max(0, Math.min(thread.scrollHeight - thread.clientHeight, scrollTop));
+    thread.scrollTo({ top: clamped, behavior: 'smooth' });
+    if (this._highlightTimeout) clearTimeout(this._highlightTimeout);
+    this._highlightedMessageId = msgId;
+    this._highlightTimeout = window.setTimeout(() => {
+      this._highlightedMessageId = null;
+      this._highlightTimeout = undefined;
+    }, 1500);
   }
 
+  private _highlightTimeout?: ReturnType<typeof setTimeout>;
+
   private _onTimelineDotClick(msgId: string) {
-    this._scrollToMessage(msgId);
+    const pct = this._timelinePositions.get(msgId);
+    this._scrollToMessage(msgId, pct);
   }
 
   private _onTimelineDotLongPress(msgId: string) {
@@ -866,6 +1041,21 @@ export class ChatTab extends LitElement {
     } catch (_) {}
   }
 
+  private _onQuoteReply(msg: ChatMessage) {
+    if (msg.isModelSwitchSeparator || msg.role === 'system') return;
+    this._replyTo = { id: msg.id, content: msg.content, role: msg.role };
+    // Focus input and scroll to it
+    const input = this.renderRoot.querySelector('.chat-input') as HTMLTextAreaElement;
+    if (input) {
+      input.focus();
+      input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  private _clearReplyTo() {
+    this._replyTo = null;
+  }
+
   private _renderMessage(msg: ChatMessage) {
     if (msg.isModelSwitchSeparator) {
       return html`<div class="model-switch-sep">— Switched to ${msg.switchedToModel} —</div>`;
@@ -874,7 +1064,7 @@ export class ChatTab extends LitElement {
     if (msg.role === 'system') return nothing;
 
     return html`
-      <div class="message ${msg.role}" data-message-id=${msg.id}>
+      <div class="message ${msg.role} ${msg.id === this._highlightedMessageId ? 'timeline-jump-highlight' : ''}" data-message-id=${msg.id}>
         <div class="bubble">${msg.content}</div>
         ${msg.role === 'assistant' ? html`
           <div class="message-meta">
@@ -885,10 +1075,30 @@ export class ChatTab extends LitElement {
             ${this.historyScope === 'all-documents' && msg.documentName ? html`
               <span class="doc-chip">${msg.documentName}</span>
             ` : nothing}
+            <span class="message-actions">
+              <button
+                class="quote-btn"
+                @click=${() => this._onQuoteReply(msg)}
+                aria-label="Quote in reply"
+                title="Quote in reply"
+              >${renderIcon(Reply, 14, 'muted')}</button>
+            </span>
           </div>
         ` : html`
           <div class="message-meta">
+            ${msg.replyTo ? html`
+              <span class="reply-indicator" title=${msg.replyTo.content}>In reply to ${msg.replyTo.role === 'assistant' ? 'AI' : 'you'}</span>
+              ·
+            ` : nothing}
             ${new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            <span class="message-actions">
+              <button
+                class="quote-btn"
+                @click=${() => this._onQuoteReply(msg)}
+                aria-label="Quote in reply"
+                title="Quote in reply"
+              >${renderIcon(Reply, 14, 'muted')}</button>
+            </span>
           </div>
         `}
       </div>
@@ -982,15 +1192,22 @@ export class ChatTab extends LitElement {
         ${showTimeline ? html`
           <div class="timeline-bar" aria-label="Message timeline">
             <div class="timeline-track">
-              ${markers.map(m => html`
+              ${markers.map(m => {
+                const top = this._timelinePositions.get(m.id) ?? 0;
+                return html`
                 <button
                   class="timeline-dot ${m.id === this._activeMessageId ? 'active' : ''} ${this._starredIds.has(m.id) ? 'starred' : ''}"
+                  style="top: ${top}%"
                   aria-label=${`Jump to message: ${m.content.slice(0, 50)}${m.content.length > 50 ? '…' : ''}`}
                   title=${`${m.content.slice(0, 60)}${m.content.length > 60 ? '…' : ''} — Click to jump, right-click to star`}
                   @click=${() => this._onTimelineDotClick(m.id)}
                   @contextmenu=${(e: Event) => { e.preventDefault(); this._onTimelineDotLongPress(m.id); }}
-                ></button>
-              `)}
+                >
+                  <svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true">
+                    <circle cx="4" cy="4" r="4" fill="currentColor"/>
+                  </svg>
+                </button>
+              `})}
             </div>
           </div>
         ` : nothing}
@@ -998,6 +1215,17 @@ export class ChatTab extends LitElement {
 
       <!-- Zone 3: Input Area -->
       <div class="input-area">
+        ${this._replyTo ? html`
+          <div class="quoted-block" role="status" aria-label="Replying to message">
+            <span class="quoted-block-content">${this._replyTo.content}</span>
+            <button
+              class="quoted-block-dismiss"
+              @click=${this._clearReplyTo}
+              aria-label="Cancel reply"
+              title="Cancel reply"
+            >${renderIcon(X, 16, 'muted')}</button>
+          </div>
+        ` : nothing}
         <div class="input-row">
           <textarea
             class="chat-input"
