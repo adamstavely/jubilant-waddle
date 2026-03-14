@@ -99,7 +99,7 @@ export interface StoredPrompt {
 
 // ─── Context Awareness ────────────────────────────────────────────────────────
 
-export type ContextLevel = 'full' | 'visible' | 'none';
+export type ContextLevel = 'full' | 'visible' | 'none' | 'all-documents';
 
 // ─── History / Persistence ────────────────────────────────────────────────────
 

@@ -10,6 +10,7 @@ export { ActionsTab } from './components/actions-tab.js';
 export { AgentTasksTab } from './components/agent-tasks-tab.js';
 export { ArborModelPicker } from './components/arbor-model-picker.js';
 export { ContextWindowIndicator } from './components/context-window-indicator.js';
+export { ContextWindowStatus } from './components/context-window-status.js';
 export { ArborRangeSlider } from './components/range-slider.js';
 export { SettingsDrawer } from './components/settings-drawer.js';
 export { PromptsDrawer } from './components/prompts-drawer.js';

@@ -11,7 +11,7 @@ export type AiTab = 'chat' | 'actions' | 'agent-tasks';
 const TAB_LABELS: Record<AiTab, string> = {
   chat: 'Chat',
   actions: 'Actions',
-  'agent-tasks': 'Agent Tasks',
+  'agent-tasks': 'Agents',
 };
 
 @customElement('ai-tabs')
@@ -23,6 +23,12 @@ export class AiTabs extends LitElement {
       background: var(--ai-color-bg-raised);
       border-bottom: 1px solid var(--ai-color-border-default);
       flex-shrink: 0;
+    }
+
+    [role="tablist"] {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
     }
 
     .tab {

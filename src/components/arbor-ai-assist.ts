@@ -75,6 +75,7 @@ export class ArborAiAssist extends LitElement {
       box-shadow: var(--ai-shadow-lg);
       display: flex;
       flex-direction: column;
+      font-family: var(--ai-font-family-sans);
       transform: translateX(100%);
       transition: transform var(--ai-duration-slow) var(--ai-easing-decelerate);
       z-index: var(--ai-z-drawer);

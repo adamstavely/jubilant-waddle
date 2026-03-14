@@ -10,10 +10,10 @@ import type {
   TokenUsage,
 } from '../models/chat.js';
 import { DEFAULT_MODELS, DEFAULT_SETTINGS } from '../models/chat.js';
-import { Settings, ClipboardList, Send, FileText, Ruler, Ban, Zap } from 'lucide';
+import { Settings, ClipboardList, Send, FileText, Ruler, Ban, Briefcase, Zap } from 'lucide';
 import { renderIcon, iconStyles } from './icons.js';
 import './arbor-model-picker.js';
-import './context-window-indicator.js';
+import './context-window-status.js';
 import './settings-drawer.js';
 import './prompts-drawer.js';
 import './context-level-toggle.js';
@@ -36,12 +36,14 @@ export class ChatTab extends LitElement {
       overflow: hidden;
     }
 
-    /* Zone 1: Context Window Indicator */
-    context-window-indicator {
-      flex-shrink: 0;
+    /* Message Thread + Timeline */
+    .thread-and-timeline {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      position: relative;
     }
 
-    /* Zone 2: Message Thread */
     .message-thread {
       flex: 1;
       overflow-y: auto;
@@ -49,6 +51,70 @@ export class ChatTab extends LitElement {
       display: flex;
       flex-direction: column;
       gap: var(--ai-spacing-sm);
+    }
+
+    /* Timeline bar (inspired by Gemini Voyager) */
+    .timeline-bar {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--ai-spacing-sm) 0;
+      z-index: 1;
+    }
+
+    .timeline-track {
+      flex: 1;
+      width: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .timeline-track::-webkit-scrollbar {
+      width: 2px;
+    }
+
+    .timeline-track::-webkit-scrollbar-thumb {
+      background: var(--ai-color-border-default);
+      border-radius: var(--ai-radius-full);
+    }
+
+    .timeline-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: none;
+      background: var(--ai-color-border-default);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background var(--ai-duration-fast), transform var(--ai-duration-fast);
+    }
+
+    .timeline-dot:hover {
+      background: var(--ai-color-accent-default);
+      transform: scale(1.2);
+    }
+
+    .timeline-dot.active {
+      background: var(--ai-color-accent-default);
+      box-shadow: 0 0 0 2px var(--ai-color-accent-glow);
+    }
+
+    .timeline-dot.starred {
+      background: var(--ai-color-gold);
+    }
+
+    .timeline-dot.starred.active {
+      background: var(--ai-color-gold);
+      box-shadow: 0 0 0 2px var(--ai-color-gold-bg);
     }
 
     .message-thread::-webkit-scrollbar {
@@ -83,7 +149,7 @@ export class ChatTab extends LitElement {
       border: none;
       font-size: var(--ai-font-size-xs);
       padding: 0;
-      font-family: inherit;
+      font-family: var(--ai-font-family-sans);
     }
 
     /* Model switch separator */
@@ -159,15 +225,20 @@ export class ChatTab extends LitElement {
       flex-shrink: 0;
     }
 
-    .context-badge.full .ai-icon { color: var(--ai-color-gold); }
+    .context-badge.full .ai-icon,
+    .context-badge.all-documents .ai-icon { color: var(--ai-color-gold); }
     .context-badge.visible .ai-icon { color: var(--ai-color-teal); }
     .context-badge.none .ai-icon { color: var(--ai-color-text-muted); }
 
     .context-badge.full {
-      background: rgba(251, 191, 36, 0.12);
+      background: var(--ai-color-gold-bg);
       color: var(--ai-color-gold);
     }
 
+    .context-badge.all-documents {
+      background: var(--ai-color-gold-bg);
+      color: var(--ai-color-gold);
+    }
     .context-badge.visible {
       background: rgba(20, 184, 166, 0.15);
       color: var(--ai-color-teal);
@@ -293,7 +364,8 @@ export class ChatTab extends LitElement {
     }
 
     .control-bar .cb-btn,
-    .control-bar .cb-settings-cluster {
+    .control-bar .cb-settings-cluster,
+    .control-bar context-window-status {
       flex-shrink: 0;
     }
 
@@ -370,16 +442,6 @@ export class ChatTab extends LitElement {
       flex: 1;
     }
 
-    .cb-token-hint {
-      font-family: var(--ai-font-family-mono);
-      font-size: var(--ai-font-size-xs);
-      cursor: default;
-    }
-
-    .cb-token-hint.zone-normal  { color: var(--ai-color-semantic-success); }
-    .cb-token-hint.zone-warning { color: var(--ai-color-semantic-warning); }
-    .cb-token-hint.zone-danger  { color: var(--ai-color-semantic-danger); }
-
     /* Empty thread */
     .empty-thread {
       flex: 1;
@@ -392,7 +454,7 @@ export class ChatTab extends LitElement {
 
     /* Welcome state */
     .welcome-card {
-      background: linear-gradient(135deg, var(--ai-color-accent-glow) 0%, rgba(200,169,110,0.06) 100%);
+      background: linear-gradient(135deg, var(--ai-color-accent-glow) 0%, rgba(79,70,229,0.06) 100%);
       border: 1px solid var(--ai-color-accent-dim);
       border-radius: var(--ai-radius-lg);
       padding: var(--ai-spacing-lg);
@@ -504,9 +566,33 @@ export class ChatTab extends LitElement {
   @state() private _promptsPromptPrefill = '';
   @state() private _hasSentOnce = false;
   @state() private _streamingContent = '';
+  @state() private _activeMessageId: string | null = null;
+  @state() private _starredIds = new Set<string>();
+
+  private _scrollCleanup?: () => void;
+
+  connectedCallback() {
+    super.connectedCallback();
+    // Initialize from chatHistory prop
+    if (this.chatHistory.length) {
+      this._messages = [...this.chatHistory];
+      this._hasSentOnce = true;
+    }
+    // Default model
+    if (!this.selectedModelId) {
+      const def = this.availableModels.find(m => m.default) ?? this.availableModels.find(m => m.tier === 'balanced') ?? this.availableModels[0];
+      if (def) this.selectedModelId = def.id;
+    }
+    document.addEventListener('keydown', this._onGlobalKeydown.bind(this));
+    this._loadStarred();
+  }
 
   override updated(changed: Map<string, unknown>) {
     super.updated(changed);
+    if (changed.has('documentId')) this._loadStarred();
+    if (changed.has('_messages')) {
+      this._setupScrollObserver();
+    }
     // Streaming: accumulate tokens, finalize when null
     if (changed.has('streamingToken')) {
       if (this.streamingToken !== null) {
@@ -535,24 +621,39 @@ export class ChatTab extends LitElement {
     }
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    // Initialize from chatHistory prop
-    if (this.chatHistory.length) {
-      this._messages = [...this.chatHistory];
-      this._hasSentOnce = true;
-    }
-    // Default model
-    if (!this.selectedModelId) {
-      const def = this.availableModels.find(m => m.default) ?? this.availableModels.find(m => m.tier === 'balanced') ?? this.availableModels[0];
-      if (def) this.selectedModelId = def.id;
-    }
-    document.addEventListener('keydown', this._onGlobalKeydown.bind(this));
-  }
-
   disconnectedCallback() {
     super.disconnectedCallback();
     document.removeEventListener('keydown', this._onGlobalKeydown.bind(this));
+    this._scrollCleanup?.();
+  }
+
+  private _setupScrollObserver() {
+    this._scrollCleanup?.();
+    const markers = this._timelineMarkers;
+    if (markers.length === 0) {
+      this._activeMessageId = null;
+      return;
+    }
+    const thread = this.renderRoot.querySelector('.message-thread') as HTMLElement;
+    if (!thread) return;
+    const updateActive = () => {
+      const rect = thread.getBoundingClientRect();
+      const centerY = rect.top + rect.height * 0.3;
+      let best: { id: string; dist: number } | null = null;
+      for (const m of markers) {
+        const el = this.renderRoot.querySelector(`[data-message-id="${m.id}"]`) as HTMLElement;
+        if (!el) continue;
+        const elRect = el.getBoundingClientRect();
+        const elCenter = elRect.top + elRect.height / 2;
+        const dist = Math.abs(elCenter - centerY);
+        if (!best || dist < best.dist) best = { id: m.id, dist };
+      }
+      if (best) this._activeMessageId = best.id;
+    };
+    updateActive();
+    const boundUpdate = () => requestAnimationFrame(updateActive);
+    thread.addEventListener('scroll', boundUpdate, { passive: true });
+    this._scrollCleanup = () => thread.removeEventListener('scroll', boundUpdate);
   }
 
   private _onGlobalKeydown(e: KeyboardEvent) {
@@ -711,16 +812,10 @@ export class ChatTab extends LitElement {
     return 'normal';
   }
 
-  private _tokenHintLabel(): string {
-    if (!this.tokenUsage) return '';
-    const n = this.tokenUsage.totalUsed;
-    if (n >= 1000) return `~${(n / 1000).toFixed(1)}k`;
-    return String(n);
-  }
-
   private _contextBadgeIcon(msg: ChatMessage) {
     if (!msg.contextLevel || msg.contextLevel === 'none') return renderIcon(Ban, 12, 'muted');
     if (msg.contextLevel === 'visible' && msg.pageRange) return renderIcon(Ruler, 12, 'teal');
+    if (msg.contextLevel === 'all-documents') return renderIcon(Briefcase, 12, 'gold');
     return renderIcon(FileText, 12, 'gold');
   }
 
@@ -729,11 +824,46 @@ export class ChatTab extends LitElement {
     if (msg.contextLevel === 'visible' && msg.pageRange) {
       return `${msg.pageRange.start}–${msg.pageRange.end}`;
     }
-    return 'Full';
+    if (msg.contextLevel === 'all-documents') return 'All docs';
+    return 'Single doc';
   }
 
   private _selectedModel(): AgentModel | undefined {
     return this.availableModels.find(m => m.id === this.selectedModelId);
+  }
+
+  private get _timelineMarkers(): ChatMessage[] {
+    return this._messages.filter(m => m.role === 'user' && !m.isModelSwitchSeparator);
+  }
+
+  private _scrollToMessage(msgId: string) {
+    const el = this.renderRoot.querySelector(`[data-message-id="${msgId}"]`) as HTMLElement;
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  private _onTimelineDotClick(msgId: string) {
+    this._scrollToMessage(msgId);
+  }
+
+  private _onTimelineDotLongPress(msgId: string) {
+    const next = new Set(this._starredIds);
+    if (next.has(msgId)) next.delete(msgId);
+    else next.add(msgId);
+    this._starredIds = next;
+    const key = `arborTimelineStars:${this.documentId || 'default'}`;
+    try {
+      localStorage.setItem(key, JSON.stringify([...next]));
+    } catch (_) {}
+  }
+
+  private _loadStarred() {
+    const key = `arborTimelineStars:${this.documentId || 'default'}`;
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) this._starredIds = new Set(JSON.parse(raw));
+    } catch (_) {}
   }
 
   private _renderMessage(msg: ChatMessage) {
@@ -744,7 +874,7 @@ export class ChatTab extends LitElement {
     if (msg.role === 'system') return nothing;
 
     return html`
-      <div class="message ${msg.role}">
+      <div class="message ${msg.role}" data-message-id=${msg.id}>
         <div class="bubble">${msg.content}</div>
         ${msg.role === 'assistant' ? html`
           <div class="message-meta">
@@ -825,28 +955,45 @@ export class ChatTab extends LitElement {
   }
 
   render() {
-    const zone = this._tokenZone();
-    const nearFull = zone === 'danger';
+    const nearFull = this._tokenZone() === 'danger';
     const model = this._selectedModel();
 
-    return html`
-      <!-- Zone 1: Context Window Indicator -->
-      <context-window-indicator
-        .tokenUsage=${this.tokenUsage}
-        .contextLimit=${model?.contextWindowTokens ?? 128000}
-        @context-window-warning=${this._onContextWindowWarning}
-      ></context-window-indicator>
+    const markers = this._timelineMarkers;
+    const showTimeline = markers.length > 0;
 
-      <!-- Zone 2: Message Thread -->
-      <div class="message-thread" role="log" aria-live="polite" aria-label="Chat messages">
-        ${this._renderHistoryIndicator()}
-        ${this._messages.length === 0 && !this._streamingContent
-          ? this._renderWelcome()
-          : html`
-            ${this._messages.map(m => this._renderMessage(m))}
-            ${this._renderStreamingOrTyping()}
-          `
-        }
+    return html`
+      <!-- Zone 2: Message Thread + Timeline -->
+      <div class="thread-and-timeline">
+        <div
+          class="message-thread"
+          role="log"
+          aria-live="polite"
+          aria-label="Chat messages"
+        >
+          ${this._renderHistoryIndicator()}
+          ${this._messages.length === 0 && !this._streamingContent
+            ? this._renderWelcome()
+            : html`
+              ${this._messages.map(m => this._renderMessage(m))}
+              ${this._renderStreamingOrTyping()}
+            `
+          }
+        </div>
+        ${showTimeline ? html`
+          <div class="timeline-bar" aria-label="Message timeline">
+            <div class="timeline-track">
+              ${markers.map(m => html`
+                <button
+                  class="timeline-dot ${m.id === this._activeMessageId ? 'active' : ''} ${this._starredIds.has(m.id) ? 'starred' : ''}"
+                  aria-label=${`Jump to message: ${m.content.slice(0, 50)}${m.content.length > 50 ? '…' : ''}`}
+                  title=${`${m.content.slice(0, 60)}${m.content.length > 60 ? '…' : ''} — Click to jump, right-click to star`}
+                  @click=${() => this._onTimelineDotClick(m.id)}
+                  @contextmenu=${(e: Event) => { e.preventDefault(); this._onTimelineDotLongPress(m.id); }}
+                ></button>
+              `)}
+            </div>
+          </div>
+        ` : nothing}
       </div>
 
       <!-- Zone 3: Input Area -->
@@ -930,18 +1077,19 @@ export class ChatTab extends LitElement {
           </button>
         </div>
 
-        <!-- Optional token hint -->
-        ${this.tokenUsage ? html`
-          <span class="cb-token-hint zone-${zone}" title="Approximate token usage">
-            ${this._tokenHintLabel()}
-          </span>
-        ` : nothing}
+        <!-- Context window status (between prompts and doc icon) -->
+        <context-window-status
+          .tokenUsage=${this.tokenUsage}
+          .contextLimit=${model?.contextWindowTokens ?? 128000}
+          @context-window-warning=${this._onContextWindowWarning}
+        ></context-window-status>
 
         <div class="cb-spacer"></div>
 
         <!-- Context Toggle -->
         <context-level-toggle
           .contextLevel=${this.contextLevel}
+          .historyScope=${this.historyScope}
           @context-level-changed=${this._onContextLevelChanged}
         ></context-level-toggle>
 

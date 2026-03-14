@@ -56,7 +56,7 @@ export class AgentTasksTab extends LitElement {
       border-radius: var(--ai-radius-sm);
       color: var(--ai-color-text-secondary);
       cursor: pointer;
-      font-family: inherit;
+      font-family: var(--ai-font-family-sans);
     }
 
     .clear-btn:hover {

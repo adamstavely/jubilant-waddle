@@ -2,45 +2,45 @@
   "ai": {
     "color": {
       "bg": {
-        "base": { "$value": "#0f0f0e", "$type": "color", "$description": "Outermost panel background" },
-        "surface": { "$value": "#181816", "$type": "color", "$description": "Panel surface, header, input area" },
-        "raised": { "$value": "#1f1f1c", "$type": "color", "$description": "Raised surfaces" },
-        "hover": { "$value": "#252522", "$type": "color", "$description": "Hover state" },
-        "overlay": { "$value": "#2a2a26", "$type": "color", "$description": "Overlay backgrounds" }
+        "base": { "$value": "#ffffff", "$type": "color", "$description": "Outermost panel background" },
+        "surface": { "$value": "#ffffff", "$type": "color", "$description": "Panel surface, header, input area" },
+        "raised": { "$value": "#f5f5f5", "$type": "color", "$description": "Raised surfaces" },
+        "hover": { "$value": "#e7e5e4", "$type": "color", "$description": "Hover state" },
+        "overlay": { "$value": "#d6d3d1", "$type": "color", "$description": "Overlay backgrounds" }
       },
       "border": {
-        "default": { "$value": "#2a2a26", "$type": "color" },
-        "bright": { "$value": "#3d3d38", "$type": "color" },
-        "focus": { "$value": "#c8a96e", "$type": "color" }
+        "default": { "$value": "#e7e5e4", "$type": "color" },
+        "bright": { "$value": "#d6d3d1", "$type": "color" },
+        "focus": { "$value": "#4f46e5", "$type": "color" }
       },
       "text": {
-        "primary": { "$value": "#e8e4d9", "$type": "color" },
-        "secondary": { "$value": "#8a8680", "$type": "color" },
-        "muted": { "$value": "#4a4a46", "$type": "color" },
-        "inverse": { "$value": "#0f0f0e", "$type": "color" }
+        "primary": { "$value": "#1c1917", "$type": "color" },
+        "secondary": { "$value": "#57534e", "$type": "color" },
+        "muted": { "$value": "#a8a29e", "$type": "color" },
+        "inverse": { "$value": "#ffffff", "$type": "color" }
       },
       "accent": {
-        "default": { "$value": "#c8a96e", "$type": "color" },
-        "dim": { "$value": "#8a7249", "$type": "color" },
-        "glow": { "$value": "rgba(200,169,110,0.12)", "$type": "color" },
-        "contrast": { "$value": "#0f0f0e", "$type": "color" },
+        "default": { "$value": "#4f46e5", "$type": "color" },
+        "dim": { "$value": "#6366f1", "$type": "color" },
+        "glow": { "$value": "rgba(79,70,229,0.12)", "$type": "color" },
+        "contrast": { "$value": "#ffffff", "$type": "color" },
         "on-accent": { "$value": "#ffffff", "$type": "color", "$description": "Icon/text on accent background" }
       },
       "semantic": {
-        "danger": { "$value": "#c96e6e", "$type": "color" },
-        "warning": { "$value": "#c8a96e", "$type": "color" },
-        "success": { "$value": "#6dbd8a", "$type": "color" },
-        "info": { "$value": "#6e9bc8", "$type": "color" }
+        "danger": { "$value": "#b91c1c", "$type": "color" },
+        "warning": { "$value": "#3b82f6", "$type": "color" },
+        "success": { "$value": "#15803d", "$type": "color" },
+        "info": { "$value": "#1d4ed8", "$type": "color" }
       },
       "gold": {
-        "$value": "#c8a96e",
+        "$value": "#4f46e5",
         "$type": "color",
         "$description": "Tier badges, accent"
       },
       "gold-bg": {
-        "$value": "rgba(200,169,110,0.12)",
+        "$value": "rgba(79,70,229,0.12)",
         "$type": "color",
-        "$description": "Gold background tint"
+        "$description": "Accent background tint"
       },
       "teal": {
         "$value": "#0d9488",
@@ -57,7 +57,7 @@
       "2xl": { "$value": "48px", "$type": "dimension" }
     },
     "sizing": {
-      "panel-width": { "$value": "420px", "$type": "dimension" },
+      "panel-width": { "$value": "750px", "$type": "dimension" },
       "header-height": { "$value": "52px", "$type": "dimension" },
       "tabbar-height": { "$value": "44px", "$type": "dimension" }
     },
@@ -70,9 +70,9 @@
     },
     "font": {
       "family": {
-        "serif": { "$value": "DM Serif Display, Georgia, serif", "$type": "fontFamily" },
-        "mono": { "$value": "JetBrains Mono, Consolas, monospace", "$type": "fontFamily" },
-        "sans": { "$value": "Instrument Sans, system-ui, sans-serif", "$type": "fontFamily" }
+        "serif": { "$value": "Inter, system-ui, sans-serif", "$type": "fontFamily" },
+        "mono": { "$value": "Inter, system-ui, sans-serif", "$type": "fontFamily" },
+        "sans": { "$value": "Inter, system-ui, sans-serif", "$type": "fontFamily" }
       },
       "size": {
         "xs": { "$value": "9px", "$type": "dimension" },

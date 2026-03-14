@@ -147,7 +147,7 @@ export class SettingsDrawer extends LitElement {
       gap: var(--ai-spacing-xs);
       margin-top: var(--ai-spacing-xs);
       padding: var(--ai-spacing-xs) var(--ai-spacing-sm);
-      background: rgba(245, 158, 11, 0.1);
+      background: rgba(59, 130, 246, 0.1);
       border: 1px solid var(--ai-color-semantic-warning);
       border-radius: var(--ai-radius-sm);
       font-size: var(--ai-font-size-xs);

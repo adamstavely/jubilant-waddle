@@ -131,7 +131,7 @@ export class AgentTaskItem extends LitElement {
         border: 1px solid var(--ai-color-border-default);
         color: var(--ai-color-text-secondary);
         cursor: pointer;
-        font-family: inherit;
+        font-family: var(--ai-font-family-sans);
       }
 
       .action-btn.primary {

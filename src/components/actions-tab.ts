@@ -91,7 +91,7 @@ export class ActionsTab extends LitElement {
       color: var(--ai-color-text-secondary);
       font-size: var(--ai-font-size-xs);
       cursor: pointer;
-      font-family: inherit;
+      font-family: var(--ai-font-family-sans);
     }
 
     .dismiss-btn:hover {
