@@ -1,23 +1,27 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { ContextLevel } from '../models/chat.js';
+import { FileText, Ruler, Ban, ChevronDown, Check } from 'lucide';
+import { renderIcon, iconStyles } from './icons.js';
 
 interface ContextOption {
   level: ContextLevel;
-  icon: string;
+  iconData: Array<[string, Record<string, string | number | undefined>]>;
   label: string;
   description: string;
 }
 
 const OPTIONS: ContextOption[] = [
-  { level: 'full', icon: '📄', label: 'Full Document', description: 'Complete document text up to context limit.' },
-  { level: 'visible', icon: '📏', label: 'Visible Pages', description: 'Only pages currently visible in the viewer.' },
-  { level: 'none', icon: '🚫', label: 'No Context', description: 'No document text — generic assistant mode.' },
+  { level: 'full', iconData: FileText, label: 'Full Document', description: 'Complete document text up to context limit.' },
+  { level: 'visible', iconData: Ruler, label: 'Visible Pages', description: 'Only pages currently visible in the viewer.' },
+  { level: 'none', iconData: Ban, label: 'No Context', description: 'No document text — generic assistant mode.' },
 ];
 
 @customElement('context-level-toggle')
 export class ContextLevelToggle extends LitElement {
-  static styles = css`
+  static styles = [
+    iconStyles,
+    css`
     :host {
       display: inline-flex;
       align-items: center;
@@ -44,10 +48,20 @@ export class ContextLevelToggle extends LitElement {
       color: var(--ai-color-accent-default);
     }
 
+    .toggle-btn.on .ai-icon {
+      color: var(--ai-color-accent-default);
+    }
+
     .toggle-btn.off {
       background: transparent;
       border-color: var(--ai-color-border-default);
       color: var(--ai-color-text-muted);
+    }
+
+    .toggle-btn svg {
+      display: block;
+      flex-shrink: 0;
+      opacity: 1;
     }
 
     .icon-off {
@@ -55,7 +69,8 @@ export class ContextLevelToggle extends LitElement {
     }
 
     .chevron {
-      font-size: 10px;
+      display: flex;
+      align-items: center;
       opacity: 0.7;
     }
 
@@ -90,8 +105,13 @@ export class ContextLevelToggle extends LitElement {
       background: var(--ai-color-accent-glow);
     }
 
+    .flyout-option.selected .ai-icon {
+      color: var(--ai-color-accent-default);
+    }
+
     .opt-icon {
-      font-size: var(--ai-font-size-base);
+      display: flex;
+      align-items: center;
       flex-shrink: 0;
       margin-top: 1px;
     }
@@ -115,7 +135,11 @@ export class ContextLevelToggle extends LitElement {
       flex-shrink: 0;
       align-self: center;
     }
-  `;
+
+    .check .ai-icon {
+      color: var(--ai-color-accent-default);
+    }
+  `];
 
   @property({ type: String }) contextLevel: ContextLevel = 'full';
   @state() private _flyoutOpen = false;
@@ -165,14 +189,14 @@ export class ContextLevelToggle extends LitElement {
       <button
         class="toggle-btn ${isOn ? 'on' : 'off'}"
         title=${isOn ? 'Document context is included in requests.' : 'Document context is excluded.'}
+        aria-label="Document context scope"
         @click=${this._onToggle}
         aria-pressed=${isOn}
         aria-haspopup="true"
         aria-expanded=${this._flyoutOpen}
       >
-        <span class="${isOn ? '' : 'icon-off'}">${current.icon}</span>
-        <span>Doc</span>
-        <span class="chevron">▾</span>
+        <span class="${isOn ? '' : 'icon-off'}">${renderIcon(current.iconData, 16, isOn ? 'accent' : 'default')}</span>
+        <span class="chevron">${renderIcon(ChevronDown, 10)}</span>
       </button>
 
       ${this._flyoutOpen ? html`
@@ -184,12 +208,12 @@ export class ContextLevelToggle extends LitElement {
               aria-checked=${opt.level === this.contextLevel}
               @click=${() => this._selectLevel(opt.level)}
             >
-              <span class="opt-icon">${opt.icon}</span>
+              <span class="opt-icon">${renderIcon(opt.iconData, 16, opt.level === this.contextLevel ? 'accent' : 'default')}</span>
               <div>
                 <div class="opt-label">${opt.label}</div>
                 <div class="opt-desc">${opt.description}</div>
               </div>
-              ${opt.level === this.contextLevel ? html`<span class="check">✓</span>` : nothing}
+              ${opt.level === this.contextLevel ? html`<span class="check">${renderIcon(Check, 14, 'accent')}</span>` : nothing}
             </div>
           `)}
         </div>

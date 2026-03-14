@@ -37,7 +37,7 @@ export class PromptsDrawer extends LitElement {
     .search-input {
       width: 100%;
       box-sizing: border-box;
-      background: var(--ai-color-bg-surface, #0e0e1a);
+      background: var(--ai-color-bg-surface);
       border: 1px solid var(--ai-color-border-default);
       border-radius: var(--ai-radius-sm);
       color: var(--ai-color-text-primary);
@@ -211,7 +211,7 @@ export class PromptsDrawer extends LitElement {
     .form-input, .form-textarea {
       width: 100%;
       box-sizing: border-box;
-      background: var(--ai-color-bg-surface, #0e0e1a);
+      background: var(--ai-color-bg-surface);
       border: 1px solid var(--ai-color-border-default);
       border-radius: var(--ai-radius-sm);
       color: var(--ai-color-text-primary);

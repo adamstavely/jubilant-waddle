@@ -4,55 +4,77 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ARBOR AI Assist Panel — Demo</title>
-  <link rel="stylesheet" href="/src/styles/tokens.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/dist/tokens/tokens.css" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0a0a18;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      gap: 24px;
-      padding: 24px;
+    html, body {
+      height: 100%;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--ai-color-bg-base);
     }
-    .demo-panel {
-      width: 420px;
-      height: 680px;
+    body {
       display: flex;
       flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--ai-spacing-xl);
     }
-    .demo-label {
-      color: #5c5c7a;
-      font-size: 11px;
-      font-family: monospace;
-      margin-bottom: 8px;
-      letter-spacing: 0.06em;
+    .demo-content {
+      max-width: 600px;
+      color: var(--ai-color-text-primary);
+      font-size: var(--ai-font-size-base);
+      line-height: 1.6;
     }
-    arbor-ai-assist {
-      flex: 1;
-      border-radius: 10px;
-      overflow: hidden;
+    .demo-content h1 {
+      font-size: var(--ai-font-size-xl);
+      margin-bottom: var(--ai-spacing-md);
+      color: var(--ai-color-accent-default);
+    }
+    .trigger-btn {
+      margin-top: var(--ai-spacing-lg);
+      padding: var(--ai-spacing-sm) var(--ai-spacing-lg);
+      background: var(--ai-color-accent-default);
+      color: var(--ai-color-accent-on-accent);
+      border: none;
+      border-radius: var(--ai-radius-md);
+      font-size: var(--ai-font-size-base);
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity var(--ai-duration-fast);
+    }
+    .trigger-btn:hover {
+      opacity: 0.9;
     }
   </style>
 </head>
 <body>
-  <div class="demo-panel">
-    <div class="demo-label">ARBOR AI ASSIST PANEL v2.1</div>
-    <arbor-ai-assist
-      id="panel"
-      document-id="demo-doc-001"
-      document-name="Sample Contract.pdf"
-    ></arbor-ai-assist>
+  <div class="demo-content">
+    <h1>ARBOR Document Review</h1>
+    <p>Click the button below to open the AI Assist Panel. The panel slides in from the right with a backdrop. Press Escape or click the backdrop to close.</p>
+    <button class="trigger-btn" id="trigger">Open AI Assist Panel</button>
   </div>
+
+  <arbor-ai-assist
+    id="panel"
+    document-id="demo-doc-001"
+    document-name="Sample Contract.pdf"
+  ></arbor-ai-assist>
 
   <script type="module" src="/src/index.ts"></script>
   <script type="module">
-    import { DEFAULT_MODELS } from '/src/models/chat.ts';
-    import { DEFAULT_SETTINGS } from '/src/models/chat.ts';
-
     const panel = document.getElementById('panel');
+    const trigger = document.getElementById('trigger');
+
+    trigger.addEventListener('click', () => {
+      panel.open = true;
+    });
+
+    panel.addEventListener('open-change', (e) => {
+      panel.open = e.detail.open;
+    });
 
     // Simulate host providing data
     panel.availableModels = [
@@ -87,7 +109,7 @@
     }, 2000);
 
     // Log events
-    ['model-changed', 'settings-changed', 'context-level-changed', 'history-persistence-changed', 'chat-message-sent'].forEach(ev => {
+    ['open-change', 'tab-change', 'model-changed', 'settings-changed', 'context-level-changed', 'history-persistence-changed', 'chat-message-sent'].forEach(ev => {
       panel.addEventListener(ev, e => console.log(`[arbor] ${ev}`, e.detail));
     });
   </script>

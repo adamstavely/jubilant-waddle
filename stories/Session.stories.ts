@@ -19,34 +19,32 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
-const panelStyle = 'width: 420px; height: 600px; display: flex; flex-direction: column;';
-
 export const HistoryRestored: Story = {
   name: 'Session — history restored',
   render: () => html`
-    <div style=${panelStyle}>
-      <arbor-ai-assist
-        document-id="doc-001"
-        document-name="Contract A.pdf"
-        .availableModels=${DEFAULT_MODELS}
-        .chatHistory=${HISTORY}
-      ></arbor-ai-assist>
-    </div>
+    <arbor-ai-assist
+      open
+      document-id="doc-001"
+      document-name="Contract A.pdf"
+      .availableModels=${DEFAULT_MODELS}
+      .chatHistory=${HISTORY}
+    ></arbor-ai-assist>
   `,
 };
 
 export const ClearConfirmation: Story = {
   name: 'Session — clear confirmation',
   render: () => html`
-    <div style=${panelStyle}>
+    <div style="padding: var(--ai-spacing-xl);">
       <arbor-ai-assist
+        open
         document-id="doc-001"
         document-name="Contract A.pdf"
         .availableModels=${DEFAULT_MODELS}
         .chatHistory=${HISTORY}
       ></arbor-ai-assist>
-      <p style="color: #9898b8; font-family: monospace; font-size: 12px; margin-top: 8px;">
-        Right-click or long-press the 💾 Saved button and select "Clear history…" to trigger the confirmation toast.
+      <p style="color: var(--ai-color-text-muted); font-family: var(--ai-font-family-mono); font-size: var(--ai-font-size-xs); margin-top: 16px;">
+        Click the History button chevron and select "Clear history…" to trigger the confirmation toast.
       </p>
     </div>
   `,

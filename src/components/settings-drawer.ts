@@ -2,13 +2,17 @@ import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { ChatSettings } from '../models/chat.js';
 import { DEFAULT_SETTINGS, SETTINGS_PARAMS } from '../models/chat.js';
+import { TriangleAlert } from 'lucide';
+import { renderIcon, iconStyles } from './icons.js';
 import './range-slider.js';
 
 const MAX_SYSTEM_PROMPT_CHARS = 4000;
 
 @customElement('settings-drawer')
 export class SettingsDrawer extends LitElement {
-  static styles = css`
+  static styles = [
+    iconStyles,
+    css`
     :host {
       display: block;
       font-family: var(--ai-font-family-sans);
@@ -122,7 +126,7 @@ export class SettingsDrawer extends LitElement {
       min-height: calc(4 * 1.5em + 12px);
       max-height: 160px;
       resize: vertical;
-      background: var(--ai-color-bg-surface, #0e0e1a);
+      background: var(--ai-color-bg-surface);
       border: 1px solid var(--ai-color-border-default);
       border-radius: var(--ai-radius-sm);
       color: var(--ai-color-text-primary);
@@ -147,6 +151,15 @@ export class SettingsDrawer extends LitElement {
       border: 1px solid var(--ai-color-semantic-warning);
       border-radius: var(--ai-radius-sm);
       font-size: var(--ai-font-size-xs);
+      color: var(--ai-color-semantic-warning);
+    }
+
+    .overwrite-warning .warning-icon {
+      flex-shrink: 0;
+      display: flex;
+    }
+
+    .overwrite-warning .ai-icon {
       color: var(--ai-color-semantic-warning);
     }
 
@@ -198,7 +211,7 @@ export class SettingsDrawer extends LitElement {
       border-color: var(--ai-color-semantic-danger);
       color: var(--ai-color-semantic-danger);
     }
-  `;
+  `];
 
   @property({ type: Boolean }) open = false;
   @property({ type: Object }) settings: ChatSettings = { ...DEFAULT_SETTINGS };
@@ -304,7 +317,8 @@ export class SettingsDrawer extends LitElement {
 
             ${this._systemPromptOverridden ? html`
               <div class="overwrite-warning" role="alert">
-                ⚠ You've overridden the default system prompt. This applies to this session only.
+                <span class="warning-icon">${renderIcon(TriangleAlert, 14, 'warning')}</span>
+                You've overridden the default system prompt. This applies to this session only.
               </div>
             ` : nothing}
 

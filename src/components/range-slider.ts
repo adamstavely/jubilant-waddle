@@ -68,7 +68,7 @@ export class ArborRangeSlider extends LitElement {
       height: 14px;
       border-radius: 50%;
       background: var(--ai-color-accent-default);
-      border: 2px solid var(--ai-color-bg-surface, #0e0e1a);
+      border: 2px solid var(--ai-color-bg-surface);
       margin-top: -5px;
       cursor: pointer;
       transition: transform var(--ai-duration-fast) var(--ai-easing-standard);
@@ -83,7 +83,7 @@ export class ArborRangeSlider extends LitElement {
       height: 14px;
       border-radius: 50%;
       background: var(--ai-color-accent-default);
-      border: 2px solid var(--ai-color-bg-surface, #0e0e1a);
+      border: 2px solid var(--ai-color-bg-surface);
       cursor: pointer;
     }
 
@@ -91,7 +91,7 @@ export class ArborRangeSlider extends LitElement {
       width: 64px;
       flex-shrink: 0;
       padding: 3px var(--ai-spacing-xs);
-      background: var(--ai-color-bg-surface, #0e0e1a);
+      background: var(--ai-color-bg-surface);
       border: 1px solid var(--ai-color-border-default);
       border-radius: var(--ai-radius-sm);
       color: var(--ai-color-text-primary);

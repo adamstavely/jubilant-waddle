@@ -1,6 +1,8 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { AgentModel, ModelTier } from '../models/chat.js';
+import { ChevronDown, Check } from 'lucide';
+import { renderIcon, iconStyles } from './icons.js';
 
 const TIER_ORDER: ModelTier[] = ['fast', 'balanced', 'reasoning', 'extended'];
 const TIER_LABELS: Record<ModelTier, string> = {
@@ -12,7 +14,9 @@ const TIER_LABELS: Record<ModelTier, string> = {
 
 @customElement('arbor-model-picker')
 export class ArborModelPicker extends LitElement {
-  static styles = css`
+  static styles = [
+    iconStyles,
+    css`
     :host {
       display: inline-flex;
       align-items: center;
@@ -67,7 +71,8 @@ export class ArborModelPicker extends LitElement {
 
     .chevron {
       flex-shrink: 0;
-      font-size: 10px;
+      display: flex;
+      align-items: center;
       color: var(--ai-color-text-secondary);
       transition: transform var(--ai-duration-fast) var(--ai-easing-standard);
     }
@@ -76,10 +81,10 @@ export class ArborModelPicker extends LitElement {
       transform: rotate(180deg);
     }
 
-    /* Dropdown */
+    /* Dropdown — opens upward so it isn't clipped by control bar overflow */
     .dropdown {
       position: absolute;
-      top: calc(100% + 4px);
+      bottom: calc(100% + 4px);
       left: 0;
       width: 280px;
       background: var(--ai-color-bg-raised);
@@ -137,8 +142,13 @@ export class ArborModelPicker extends LitElement {
     }
 
     .check-icon {
+      display: flex;
       width: 14px;
       flex-shrink: 0;
+      color: var(--ai-color-accent-default);
+    }
+
+    .check-icon .ai-icon {
       color: var(--ai-color-accent-default);
     }
 
@@ -158,7 +168,7 @@ export class ArborModelPicker extends LitElement {
       font-size: var(--ai-font-size-xs);
       color: var(--ai-color-text-muted);
     }
-  `;
+  `];
 
   @property({ type: Array }) availableModels: AgentModel[] = [];
   @property({ type: String }) selectedModelId = '';
@@ -229,7 +239,7 @@ export class ArborModelPicker extends LitElement {
       >
         ${selected ? html`<span class="tier-badge">${selected.tierLabel}</span>` : nothing}
         <span class="model-name">${selected?.label ?? 'Select model'}</span>
-        <span class="chevron ${this._open ? 'open' : ''}">▾</span>
+        <span class="chevron ${this._open ? 'open' : ''}">${renderIcon(ChevronDown, 10)}</span>
       </button>
 
       ${this._open ? html`
@@ -248,7 +258,7 @@ export class ArborModelPicker extends LitElement {
                     @click=${() => this._handleSelect(model)}
                   >
                     ${model.id === this.selectedModelId
-                      ? html`<span class="check-icon">✓</span>`
+                      ? html`<span class="check-icon">${renderIcon(Check, 14, 'accent')}</span>`
                       : html`<span class="check-placeholder"></span>`
                     }
                     ${model.label}

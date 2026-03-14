@@ -1,0 +1,116 @@
+{
+  "ai": {
+    "color": {
+      "bg": {
+        "base": { "$value": "#0f0f0e", "$type": "color", "$description": "Outermost panel background" },
+        "surface": { "$value": "#181816", "$type": "color", "$description": "Panel surface, header, input area" },
+        "raised": { "$value": "#1f1f1c", "$type": "color", "$description": "Raised surfaces" },
+        "hover": { "$value": "#252522", "$type": "color", "$description": "Hover state" },
+        "overlay": { "$value": "#2a2a26", "$type": "color", "$description": "Overlay backgrounds" }
+      },
+      "border": {
+        "default": { "$value": "#2a2a26", "$type": "color" },
+        "bright": { "$value": "#3d3d38", "$type": "color" },
+        "focus": { "$value": "#c8a96e", "$type": "color" }
+      },
+      "text": {
+        "primary": { "$value": "#e8e4d9", "$type": "color" },
+        "secondary": { "$value": "#8a8680", "$type": "color" },
+        "muted": { "$value": "#4a4a46", "$type": "color" },
+        "inverse": { "$value": "#0f0f0e", "$type": "color" }
+      },
+      "accent": {
+        "default": { "$value": "#c8a96e", "$type": "color" },
+        "dim": { "$value": "#8a7249", "$type": "color" },
+        "glow": { "$value": "rgba(200,169,110,0.12)", "$type": "color" },
+        "contrast": { "$value": "#0f0f0e", "$type": "color" },
+        "on-accent": { "$value": "#ffffff", "$type": "color", "$description": "Icon/text on accent background" }
+      },
+      "semantic": {
+        "danger": { "$value": "#c96e6e", "$type": "color" },
+        "warning": { "$value": "#c8a96e", "$type": "color" },
+        "success": { "$value": "#6dbd8a", "$type": "color" },
+        "info": { "$value": "#6e9bc8", "$type": "color" }
+      },
+      "gold": {
+        "$value": "#c8a96e",
+        "$type": "color",
+        "$description": "Tier badges, accent"
+      },
+      "gold-bg": {
+        "$value": "rgba(200,169,110,0.12)",
+        "$type": "color",
+        "$description": "Gold background tint"
+      },
+      "teal": {
+        "$value": "#0d9488",
+        "$type": "color",
+        "$description": "Visible context badge"
+      }
+    },
+    "spacing": {
+      "xs": { "$value": "4px", "$type": "dimension" },
+      "sm": { "$value": "8px", "$type": "dimension" },
+      "md": { "$value": "16px", "$type": "dimension" },
+      "lg": { "$value": "24px", "$type": "dimension" },
+      "xl": { "$value": "32px", "$type": "dimension" },
+      "2xl": { "$value": "48px", "$type": "dimension" }
+    },
+    "sizing": {
+      "panel-width": { "$value": "420px", "$type": "dimension" },
+      "header-height": { "$value": "52px", "$type": "dimension" },
+      "tabbar-height": { "$value": "44px", "$type": "dimension" }
+    },
+    "radius": {
+      "sm": { "$value": "4px", "$type": "dimension" },
+      "md": { "$value": "8px", "$type": "dimension" },
+      "lg": { "$value": "12px", "$type": "dimension" },
+      "pill": { "$value": "9999px", "$type": "dimension" },
+      "full": { "$value": "9999px", "$type": "dimension" }
+    },
+    "font": {
+      "family": {
+        "serif": { "$value": "DM Serif Display, Georgia, serif", "$type": "fontFamily" },
+        "mono": { "$value": "JetBrains Mono, Consolas, monospace", "$type": "fontFamily" },
+        "sans": { "$value": "Instrument Sans, system-ui, sans-serif", "$type": "fontFamily" }
+      },
+      "size": {
+        "xs": { "$value": "9px", "$type": "dimension" },
+        "sm": { "$value": "10px", "$type": "dimension" },
+        "base": { "$value": "12px", "$type": "dimension" },
+        "md": { "$value": "13px", "$type": "dimension" },
+        "lg": { "$value": "15px", "$type": "dimension" },
+        "xl": { "$value": "17px", "$type": "dimension" },
+        "2xl": { "$value": "18px", "$type": "dimension" }
+      },
+      "weight": {
+        "regular": { "$value": "400", "$type": "fontWeight" },
+        "medium": { "$value": "500", "$type": "fontWeight" },
+        "bold": { "$value": "700", "$type": "fontWeight" }
+      }
+    },
+    "duration": {
+      "fast": { "$value": "150ms", "$type": "duration" },
+      "normal": { "$value": "250ms", "$type": "duration" },
+      "slow": { "$value": "320ms", "$type": "duration" },
+      "slower": { "$value": "450ms", "$type": "duration" }
+    },
+    "easing": {
+      "standard": { "$value": "cubic-bezier(0.4, 0, 0.2, 1)", "$type": "cubicBezier" },
+      "decelerate": { "$value": "cubic-bezier(0.0, 0.0, 0.2, 1)", "$type": "cubicBezier" },
+      "accelerate": { "$value": "cubic-bezier(0.4, 0.0, 1, 1)", "$type": "cubicBezier" }
+    },
+    "shadow": {
+      "sm": { "$value": "0 1px 3px rgba(0,0,0,0.2)", "$type": "string" },
+      "md": { "$value": "0 4px 12px rgba(0,0,0,0.25)", "$type": "string" },
+      "lg": { "$value": "0 8px 24px rgba(0,0,0,0.3)", "$type": "string" }
+    },
+    "z": {
+      "backdrop": { "$value": "999", "$type": "number" },
+      "drawer": { "$value": "1000", "$type": "number" },
+      "tooltip": { "$value": "1100", "$type": "number" },
+      "dropdown": { "$value": "1100", "$type": "number" },
+      "modal": { "$value": "1200", "$type": "number" }
+    }
+  }
+}

@@ -1,10 +1,14 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { HistoryScope } from '../models/chat.js';
+import { Save, FileText, Briefcase, Trash2, ChevronDown } from 'lucide';
+import { renderIcon, iconStyles } from './icons.js';
 
 @customElement('history-toggle')
 export class HistoryToggle extends LitElement {
-  static styles = css`
+  static styles = [
+    iconStyles,
+    css`
     :host {
       display: inline-flex;
       align-items: center;
@@ -31,14 +35,27 @@ export class HistoryToggle extends LitElement {
       color: var(--ai-color-accent-default);
     }
 
+    .toggle-btn.save .ai-icon {
+      color: var(--ai-color-accent-default);
+    }
+
     .toggle-btn.discard {
       background: transparent;
       border-color: var(--ai-color-border-default);
       color: var(--ai-color-text-muted);
     }
 
+    .toggle-btn svg,
+    .flyout-option svg,
+    .danger-option svg {
+      display: block;
+      flex-shrink: 0;
+      opacity: 1;
+    }
+
     .chevron {
-      font-size: 10px;
+      display: flex;
+      align-items: center;
       opacity: 0.7;
     }
 
@@ -73,8 +90,13 @@ export class HistoryToggle extends LitElement {
       background: var(--ai-color-accent-glow);
     }
 
+    .flyout-option.selected .ai-icon {
+      color: var(--ai-color-accent-default);
+    }
+
     .opt-icon {
-      font-size: var(--ai-font-size-base);
+      display: flex;
+      align-items: center;
       flex-shrink: 0;
       margin-top: 1px;
     }
@@ -99,11 +121,22 @@ export class HistoryToggle extends LitElement {
     }
 
     .danger-option {
+      display: flex;
+      align-items: center;
+      gap: var(--ai-spacing-xs);
       color: var(--ai-color-semantic-danger);
       padding: var(--ai-spacing-sm) var(--ai-spacing-md);
       cursor: pointer;
       font-size: var(--ai-font-size-sm);
       transition: background var(--ai-duration-fast);
+    }
+
+    .danger-icon {
+      display: flex;
+    }
+
+    .danger-option .ai-icon {
+      color: var(--ai-color-semantic-danger);
     }
 
     .danger-option:hover {
@@ -157,7 +190,7 @@ export class HistoryToggle extends LitElement {
       font-size: var(--ai-font-size-sm);
       cursor: pointer;
     }
-  `;
+  `];
 
   @property({ type: Boolean }) historyPersist = true;
   @property({ type: String }) historyScope: HistoryScope = 'per-document';
@@ -226,21 +259,20 @@ export class HistoryToggle extends LitElement {
   }
 
   render() {
-    const label = this.historyPersist ? 'Saved' : 'Off';
     const modeClass = this.historyPersist ? 'save' : 'discard';
 
     return html`
       <button
         class="toggle-btn ${modeClass}"
         title=${this.historyPersist ? 'Chat history is saved per document.' : 'Chat history is not saved — clears on panel close.'}
+        aria-label=${this.historyPersist ? 'History saved' : 'History off'}
         @click=${this._onToggle}
         aria-pressed=${this.historyPersist}
         aria-haspopup="true"
         aria-expanded=${this._flyoutOpen}
       >
-        <span>💾</span>
-        <span>${label}</span>
-        <span class="chevron">▾</span>
+        <span class="icon-wrap">${renderIcon(Save, 16, this.historyPersist ? 'accent' : 'default')}</span>
+        <span class="chevron">${renderIcon(ChevronDown, 10)}</span>
       </button>
 
       ${this._flyoutOpen ? html`
@@ -251,7 +283,7 @@ export class HistoryToggle extends LitElement {
             aria-checked=${this.historyScope === 'per-document'}
             @click=${() => this._selectScope('per-document')}
           >
-            <span class="opt-icon">📄</span>
+            <span class="opt-icon">${renderIcon(FileText, 16, this.historyScope === 'per-document' ? 'accent' : 'default')}</span>
             <div>
               <div class="opt-label">Per Document</div>
               <div class="opt-desc">Each document has its own conversation thread.</div>
@@ -263,7 +295,7 @@ export class HistoryToggle extends LitElement {
             aria-checked=${this.historyScope === 'all-documents'}
             @click=${() => this._selectScope('all-documents')}
           >
-            <span class="opt-icon">💼</span>
+            <span class="opt-icon">${renderIcon(Briefcase, 16, this.historyScope === 'all-documents' ? 'accent' : 'default')}</span>
             <div>
               <div class="opt-label">All Documents</div>
               <div class="opt-desc">Single thread spans all documents in the session.</div>
@@ -271,7 +303,8 @@ export class HistoryToggle extends LitElement {
           </div>
           <div class="divider"></div>
           <div class="danger-option" role="menuitem" @click=${this._requestClear}>
-            🗑 Clear history…
+            <span class="danger-icon">${renderIcon(Trash2, 14, 'danger')}</span>
+            Clear history…
           </div>
         </div>
       ` : nothing}

@@ -1,10 +1,14 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import type { TokenUsage } from '../models/chat.js';
+import { TriangleAlert } from 'lucide';
+import { renderIcon, iconStyles } from './icons.js';
 
 @customElement('context-window-indicator')
 export class ContextWindowIndicator extends LitElement {
-  static styles = css`
+  static styles = [
+    iconStyles,
+    css`
     :host {
       display: block;
       height: 32px;
@@ -109,7 +113,16 @@ export class ContextWindowIndicator extends LitElement {
       color: var(--ai-color-semantic-danger);
       z-index: 10;
     }
-  `;
+
+    .warning-banner .warning-icon {
+      flex-shrink: 0;
+      display: flex;
+    }
+
+    .warning-banner .ai-icon {
+      color: var(--ai-color-semantic-danger);
+    }
+  `];
 
   @property({ type: Object }) tokenUsage: TokenUsage | null = null;
   @property({ type: Number }) contextLimit = 128000;
@@ -208,7 +221,8 @@ export class ContextWindowIndicator extends LitElement {
 
       ${zone === 'danger' ? html`
         <div class="warning-banner" role="alert">
-          ⚠ Context window nearly full. Oldest messages may be truncated.
+          <span class="warning-icon">${renderIcon(TriangleAlert, 14, 'danger')}</span>
+          Context window nearly full. Oldest messages may be truncated.
         </div>
       ` : nothing}
     `;

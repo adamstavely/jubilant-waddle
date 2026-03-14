@@ -10,6 +10,8 @@ import type {
   TokenUsage,
 } from '../models/chat.js';
 import { DEFAULT_MODELS, DEFAULT_SETTINGS } from '../models/chat.js';
+import { Settings, ClipboardList, Send, FileText, Ruler, Ban, Zap } from 'lucide';
+import { renderIcon, iconStyles } from './icons.js';
 import './arbor-model-picker.js';
 import './context-window-indicator.js';
 import './settings-drawer.js';
@@ -21,12 +23,14 @@ type ActiveDrawer = 'settings' | 'prompts' | null;
 
 @customElement('chat-tab')
 export class ChatTab extends LitElement {
-  static styles = css`
+  static styles = [
+    iconStyles,
+    css`
     :host {
       display: flex;
       flex-direction: column;
       height: 100%;
-      background: var(--ai-color-bg-surface, #0e0e1a);
+      background: var(--ai-color-bg-surface);
       font-family: var(--ai-font-family-sans);
       color: var(--ai-color-text-primary);
       overflow: hidden;
@@ -151,14 +155,22 @@ export class ChatTab extends LitElement {
       font-family: var(--ai-font-family-mono);
     }
 
+    .context-badge svg {
+      flex-shrink: 0;
+    }
+
+    .context-badge.full .ai-icon { color: var(--ai-color-gold); }
+    .context-badge.visible .ai-icon { color: var(--ai-color-teal); }
+    .context-badge.none .ai-icon { color: var(--ai-color-text-muted); }
+
     .context-badge.full {
       background: rgba(251, 191, 36, 0.12);
       color: var(--ai-color-gold);
     }
 
     .context-badge.visible {
-      background: rgba(20, 184, 166, 0.12);
-      color: #14b8a6;
+      background: rgba(20, 184, 166, 0.15);
+      color: var(--ai-color-teal);
     }
 
     .context-badge.none {
@@ -180,6 +192,7 @@ export class ChatTab extends LitElement {
     /* Zone 3: Input Area */
     .input-area {
       flex-shrink: 0;
+      min-width: 0;
       padding: var(--ai-spacing-sm) var(--ai-spacing-md);
       border-top: 1px solid var(--ai-color-border-default);
       background: var(--ai-color-bg-raised);
@@ -196,7 +209,7 @@ export class ChatTab extends LitElement {
       min-height: 36px;
       max-height: 160px;
       resize: none;
-      background: var(--ai-color-bg-surface, #0e0e1a);
+      background: var(--ai-color-bg-surface);
       border: 1px solid var(--ai-color-border-default);
       border-radius: var(--ai-radius-md);
       color: var(--ai-color-text-primary);
@@ -238,6 +251,10 @@ export class ChatTab extends LitElement {
       opacity: 0.85;
     }
 
+    .send-btn .ai-icon {
+      color: white;
+    }
+
     .send-warning-badge {
       position: absolute;
       top: -4px;
@@ -255,18 +272,42 @@ export class ChatTab extends LitElement {
     /* Drawers (expand upward from Zone 4) */
     .drawers-region {
       flex-shrink: 0;
+      min-width: 0;
+      overflow: hidden;
     }
 
     /* Zone 4: Control Bar */
     .control-bar {
       flex-shrink: 0;
       height: 44px;
+      min-width: 0;
+      max-width: 100%;
       display: flex;
       align-items: center;
       padding: 0 var(--ai-spacing-md);
       gap: var(--ai-spacing-sm);
       background: var(--ai-color-bg-raised);
       border-top: 1px solid var(--ai-color-border-default);
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    .control-bar .cb-btn,
+    .control-bar .cb-settings-cluster {
+      flex-shrink: 0;
+    }
+
+    .control-bar svg,
+    .input-area svg {
+      color: var(--ai-color-text-primary);
+    }
+
+    .control-bar .cb-btn.active svg {
+      color: var(--ai-color-accent-default);
+    }
+
+    .send-btn svg {
+      color: var(--ai-color-accent-on-accent);
     }
 
     .cb-separator {
@@ -293,6 +334,18 @@ export class ChatTab extends LitElement {
       font-family: var(--ai-font-family-sans);
     }
 
+    .cb-btn.cb-btn-icon {
+      padding: 6px;
+    }
+
+    .cb-btn.cb-btn-icon svg,
+    .send-btn svg {
+      display: block;
+      flex-shrink: 0;
+      opacity: 1;
+      visibility: visible;
+    }
+
     .cb-btn:hover {
       color: var(--ai-color-text-primary);
       background: var(--ai-color-bg-overlay);
@@ -300,6 +353,10 @@ export class ChatTab extends LitElement {
 
     .cb-btn.active {
       border-color: var(--ai-color-accent-default);
+      color: var(--ai-color-accent-default);
+    }
+
+    .cb-btn.active .ai-icon {
       color: var(--ai-color-accent-default);
     }
 
@@ -333,11 +390,90 @@ export class ChatTab extends LitElement {
       font-size: var(--ai-font-size-sm);
     }
 
+    /* Welcome state */
+    .welcome-card {
+      background: linear-gradient(135deg, var(--ai-color-accent-glow) 0%, rgba(200,169,110,0.06) 100%);
+      border: 1px solid var(--ai-color-accent-dim);
+      border-radius: var(--ai-radius-lg);
+      padding: var(--ai-spacing-lg);
+      margin-bottom: var(--ai-spacing-md);
+      text-align: center;
+    }
+
+    .welcome-card .welcome-icon {
+      margin-bottom: var(--ai-spacing-sm);
+    }
+
+    .welcome-card h2 {
+      font-size: var(--ai-font-size-lg);
+      font-weight: 600;
+      color: var(--ai-color-text-primary);
+      margin: 0 0 var(--ai-spacing-xs);
+    }
+
+    .welcome-card .doc-subtitle {
+      font-family: var(--ai-font-family-mono);
+      font-size: var(--ai-font-size-xs);
+      color: var(--ai-color-text-muted);
+      margin-bottom: var(--ai-spacing-md);
+    }
+
+    .quick-prompts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--ai-spacing-sm);
+      justify-content: center;
+    }
+
+    .quick-prompt-btn {
+      padding: var(--ai-spacing-xs) var(--ai-spacing-sm);
+      background: var(--ai-color-bg-raised);
+      border: 1px solid var(--ai-color-border-default);
+      border-radius: var(--ai-radius-md);
+      color: var(--ai-color-text-secondary);
+      font-size: var(--ai-font-size-sm);
+      font-family: var(--ai-font-family-sans);
+      cursor: pointer;
+      transition: border-color var(--ai-duration-fast), color var(--ai-duration-fast);
+    }
+
+    .quick-prompt-btn:hover {
+      border-color: var(--ai-color-accent-default);
+      color: var(--ai-color-accent-default);
+    }
+
+    /* Streaming */
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: var(--ai-spacing-sm) var(--ai-spacing-md);
+      align-self: flex-start;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--ai-color-text-muted);
+      animation: bounce 1.4s ease-in-out infinite both;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .typing-dot { animation: none; }
+    }
+
     @media (max-width: 480px) {
       .model-name-text { display: none; }
-      .cb-label { display: none; }
     }
-  `;
+  `];
 
   // ── Component Properties (Section 10.1) ───────────────────────────────────
   @property({ type: Array }) availableModels: AgentModel[] = DEFAULT_MODELS;
@@ -353,18 +489,58 @@ export class ChatTab extends LitElement {
   @property({ type: String }) documentName = '';
   @property({ type: String }) historyScope: HistoryScope = 'per-document';
   @property({ type: Array }) chatHistory: ChatMessage[] = [];
+  @property({ type: Array }) quickPrompts: string[] = [
+    'What are the binding obligations in this document?',
+    'Summarize the financial terms and amounts',
+    "What's missing from this draft that should be there?",
+    'Who are the key parties and their roles?',
+  ];
+  @property({ type: String }) streamingToken: string | null = null;
 
   // ── Internal State ─────────────────────────────────────────────────────────
   @state() private _messages: ChatMessage[] = [];
   @state() private _inputValue = '';
   @state() private _activeDrawer: ActiveDrawer = null;
   @state() private _promptsPromptPrefill = '';
+  @state() private _hasSentOnce = false;
+  @state() private _streamingContent = '';
+
+  override updated(changed: Map<string, unknown>) {
+    super.updated(changed);
+    // Streaming: accumulate tokens, finalize when null
+    if (changed.has('streamingToken')) {
+      if (this.streamingToken !== null) {
+        this._streamingContent += this.streamingToken;
+      } else if (this._streamingContent) {
+        this._messages = [
+          ...this._messages,
+          {
+            id: crypto.randomUUID(),
+            role: 'assistant',
+            content: this._streamingContent,
+            timestamp: new Date().toISOString(),
+            contextLevel: this.contextLevel,
+            modelId: this.selectedModelId,
+          },
+        ];
+        this._streamingContent = '';
+        if (this.historyPersist) {
+          this.dispatchEvent(new CustomEvent('chat-history-changed', {
+            detail: { documentId: this.documentId, messages: this._messages },
+            bubbles: true,
+            composed: true,
+          }));
+        }
+      }
+    }
+  }
 
   connectedCallback() {
     super.connectedCallback();
     // Initialize from chatHistory prop
     if (this.chatHistory.length) {
       this._messages = [...this.chatHistory];
+      this._hasSentOnce = true;
     }
     // Default model
     if (!this.selectedModelId) {
@@ -475,9 +651,11 @@ export class ChatTab extends LitElement {
     }
   }
 
-  private _send() {
-    const content = this._inputValue.trim();
+  private _send(contentOverride?: string) {
+    const content = (contentOverride ?? this._inputValue).trim();
     if (!content) return;
+
+    this._hasSentOnce = true;
 
     const msg: ChatMessage = {
       id: crypto.randomUUID(),
@@ -491,7 +669,7 @@ export class ChatTab extends LitElement {
     };
 
     this._messages = [...this._messages, msg];
-    this._inputValue = '';
+    if (!contentOverride) this._inputValue = '';
 
     this.dispatchEvent(new CustomEvent('chat-message-sent', {
       detail: {
@@ -516,6 +694,8 @@ export class ChatTab extends LitElement {
 
   private _startFresh() {
     this._messages = [];
+    this._hasSentOnce = false;
+    this._streamingContent = '';
     this.dispatchEvent(new CustomEvent('chat-history-cleared', {
       detail: { documentId: this.documentId },
       bubbles: true,
@@ -538,12 +718,18 @@ export class ChatTab extends LitElement {
     return String(n);
   }
 
+  private _contextBadgeIcon(msg: ChatMessage) {
+    if (!msg.contextLevel || msg.contextLevel === 'none') return renderIcon(Ban, 12, 'muted');
+    if (msg.contextLevel === 'visible' && msg.pageRange) return renderIcon(Ruler, 12, 'teal');
+    return renderIcon(FileText, 12, 'gold');
+  }
+
   private _contextBadgeLabel(msg: ChatMessage): string {
-    if (!msg.contextLevel || msg.contextLevel === 'none') return '🚫 No context';
+    if (!msg.contextLevel || msg.contextLevel === 'none') return 'No context';
     if (msg.contextLevel === 'visible' && msg.pageRange) {
-      return `📏 ${msg.pageRange.start}–${msg.pageRange.end}`;
+      return `${msg.pageRange.start}–${msg.pageRange.end}`;
     }
-    return '📄 Full';
+    return 'Full';
   }
 
   private _selectedModel(): AgentModel | undefined {
@@ -563,6 +749,7 @@ export class ChatTab extends LitElement {
         ${msg.role === 'assistant' ? html`
           <div class="message-meta">
             <span class="context-badge ${msg.contextLevel ?? 'none'}">
+              ${this._contextBadgeIcon(msg)}
               ${this._contextBadgeLabel(msg)}
             </span>
             ${this.historyScope === 'all-documents' && msg.documentName ? html`
@@ -574,6 +761,44 @@ export class ChatTab extends LitElement {
             ${new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </div>
         `}
+      </div>
+    `;
+  }
+
+  private _renderWelcome() {
+    const prompts = this.quickPrompts.slice(0, 4);
+    return html`
+      <div class="welcome-card">
+        <div class="welcome-icon">${renderIcon(Zap, 32, 'gold')}</div>
+        <h2>Ask anything about this document</h2>
+        ${this.documentName ? html`<div class="doc-subtitle">${this.documentName}</div>` : ''}
+        ${!this._hasSentOnce && prompts.length ? html`
+          <div class="quick-prompts">
+            ${prompts.map(p => html`
+              <button class="quick-prompt-btn" @click=${() => this._send(p)}>${p}</button>
+            `)}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  private _renderStreamingOrTyping() {
+    const lastMsg = this._messages[this._messages.length - 1];
+    const waitingForResponse = lastMsg?.role === 'user';
+    if (!waitingForResponse && !this._streamingContent) return nothing;
+    if (this._streamingContent) {
+      return html`
+        <div class="message assistant">
+          <div class="bubble">${this._streamingContent}</div>
+        </div>
+      `;
+    }
+    return html`
+      <div class="typing-indicator" aria-live="polite" aria-label="AI is typing">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
       </div>
     `;
   }
@@ -615,9 +840,12 @@ export class ChatTab extends LitElement {
       <!-- Zone 2: Message Thread -->
       <div class="message-thread" role="log" aria-live="polite" aria-label="Chat messages">
         ${this._renderHistoryIndicator()}
-        ${this._messages.length
-          ? this._messages.map(m => this._renderMessage(m))
-          : html`<div class="empty-thread">Send a message to begin.</div>`
+        ${this._messages.length === 0 && !this._streamingContent
+          ? this._renderWelcome()
+          : html`
+            ${this._messages.map(m => this._renderMessage(m))}
+            ${this._renderStreamingOrTyping()}
+          `
         }
       </div>
 
@@ -635,12 +863,12 @@ export class ChatTab extends LitElement {
           ></textarea>
           <button
             class="send-btn"
-            ?disabled=${!this._inputValue.trim()}
-            @click=${this._send}
+            ?disabled=${!this._inputValue.trim() || this.streamingToken !== null}
+            @click=${() => this._send()}
             aria-label="Send message"
             title=${nearFull ? 'Context window nearly full — oldest messages may be truncated' : 'Send'}
           >
-            ➤
+            ${renderIcon(Send, 18, 'white')}
             ${nearFull ? html`<span class="send-warning-badge" aria-hidden="true">!</span>` : nothing}
           </button>
         </div>
@@ -681,22 +909,24 @@ export class ChatTab extends LitElement {
         <!-- Settings cluster -->
         <div class="cb-settings-cluster">
           <button
-            class="cb-btn ${this._activeDrawer === 'settings' ? 'active' : ''}"
+            class="cb-btn cb-btn-icon ${this._activeDrawer === 'settings' ? 'active' : ''}"
             @click=${() => this._toggleDrawer('settings')}
             aria-expanded=${this._activeDrawer === 'settings'}
             aria-controls="settings-drawer"
+            aria-label="Advanced Settings"
             title="Advanced Settings"
           >
-            ⚙ <span class="cb-label">Settings</span>
+            ${renderIcon(Settings, 16)}
           </button>
           <button
-            class="cb-btn ${this._activeDrawer === 'prompts' ? 'active' : ''}"
+            class="cb-btn cb-btn-icon ${this._activeDrawer === 'prompts' ? 'active' : ''}"
             @click=${() => this._toggleDrawer('prompts')}
             aria-expanded=${this._activeDrawer === 'prompts'}
             aria-controls="prompts-drawer"
+            aria-label="Saved Prompts"
             title="Saved Prompts"
           >
-            📋 <span class="cb-label">Prompts</span>
+            ${renderIcon(ClipboardList, 16)}
           </button>
         </div>
 

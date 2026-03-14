@@ -23,71 +23,65 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
-const panelStyle = 'width: 420px; height: 600px; display: flex; flex-direction: column;';
-
 export const Default: Story = {
   name: 'Control Bar — default',
   render: () => html`
-    <div style=${panelStyle}>
-      <arbor-ai-assist
-        document-id="doc-001"
-        document-name="Contract A.pdf"
-        .availableModels=${DEFAULT_MODELS}
-        .storedPrompts=${SAMPLE_PROMPTS}
-      ></arbor-ai-assist>
-    </div>
+    <arbor-ai-assist
+      open
+      document-id="doc-001"
+      document-name="Contract A.pdf"
+      .availableModels=${DEFAULT_MODELS}
+      .storedPrompts=${SAMPLE_PROMPTS}
+    ></arbor-ai-assist>
   `,
 };
 
 export const ContextOff: Story = {
   name: 'Control Bar — context off',
   render: () => html`
-    <div style=${panelStyle}>
-      <arbor-ai-assist
-        document-id="doc-001"
-        document-name="Contract A.pdf"
-        context-level="none"
-        .contextLevel=${'none'}
-        .availableModels=${DEFAULT_MODELS}
-      ></arbor-ai-assist>
-    </div>
+    <arbor-ai-assist
+      open
+      document-id="doc-001"
+      document-name="Contract A.pdf"
+      context-level="none"
+      .contextLevel=${'none'}
+      .availableModels=${DEFAULT_MODELS}
+    ></arbor-ai-assist>
   `,
 };
 
 export const HistoryOff: Story = {
   name: 'Control Bar — history off',
   render: () => html`
-    <div style=${panelStyle}>
-      <arbor-ai-assist
-        document-id="doc-001"
-        document-name="Contract A.pdf"
-        .historyPersist=${false}
-        .availableModels=${DEFAULT_MODELS}
-      ></arbor-ai-assist>
-    </div>
+    <arbor-ai-assist
+      open
+      document-id="doc-001"
+      document-name="Contract A.pdf"
+      .historyPersist=${false}
+      .availableModels=${DEFAULT_MODELS}
+    ></arbor-ai-assist>
   `,
 };
 
 export const FullState: Story = {
   name: 'Control Bar — full state',
   render: () => html`
-    <div style=${panelStyle}>
-      <arbor-ai-assist
-        document-id="doc-001"
-        document-name="Contract A.pdf"
-        .availableModels=${DEFAULT_MODELS}
-        .storedPrompts=${SAMPLE_PROMPTS}
-        .chatHistory=${SAMPLE_HISTORY}
-        .tokenUsage=${{
-          documentTokens: 8200,
-          historyTokens: 3500,
-          systemTokens: 640,
-          totalUsed: 12340,
-          contextLimit: 128000,
-          remaining: 115660,
-          lastUpdated: new Date().toISOString(),
-        }}
-      ></arbor-ai-assist>
-    </div>
+    <arbor-ai-assist
+      open
+      document-id="doc-001"
+      document-name="Contract A.pdf"
+      .availableModels=${DEFAULT_MODELS}
+      .storedPrompts=${SAMPLE_PROMPTS}
+      .chatHistory=${SAMPLE_HISTORY}
+      .tokenUsage=${{
+        documentTokens: 8200,
+        historyTokens: 3500,
+        systemTokens: 640,
+        totalUsed: 12340,
+        contextLimit: 128000,
+        remaining: 115660,
+        lastUpdated: new Date().toISOString(),
+      }}
+    ></arbor-ai-assist>
   `,
 };
